@@ -655,28 +655,62 @@ header h1 { font-size: 1.9rem; font-weight: 800; }
     setTimeout(() => t.classList.remove('show'), dur);
   }
 
-  function addTicket() {
-    const nameInp = document.getElementById('nameInput');
-    const name = nameInp.value.trim();
-    if (!name) {
-      nameInp.focus();
-      nameInp.style.borderColor = '#e53e3e';
-      setTimeout(() => nameInp.style.borderColor = '', 900);
-      return;
-    }
-    const apellido = document.getElementById('apellidoInput').value.trim();
-    const celular = document.getElementById('celularInput').value.trim();
-    const d = getData();
-    d.tickets.push({ num: d.counter, name, apellido, celular, time: new Date().toLocaleString('es-PE') });
-    d.counter++;
-    saveData(d);
-    nameInp.value = '';
-    document.getElementById('apellidoInput').value = '';
-    document.getElementById('celularInput').value = '';
-    nameInp.focus();
-    renderAll();
-    showToast('✅ Ticket registrado correctamente');
+  async function addTicket() {
+
+  const nameInp = document.getElementById('nameInput');
+  const name = nameInp.value.trim();
+
+  if (!name) {
+    alert("Ingrese un nombre");
+    return;
   }
+
+  const apellido = document.getElementById('apellidoInput').value.trim();
+  const celular = document.getElementById('celularInput').value.trim();
+
+  const d = getData();
+
+  const ticket = {
+    num: d.counter,
+    name,
+    apellido,
+    celular,
+    time: new Date().toLocaleString('es-PE')
+  };
+
+  d.tickets.push(ticket);
+  d.counter++;
+
+  saveData(d);
+
+  try {
+
+    await fetch("https://script.google.com/macros/s/AKfycbzV8H5PmvmUb5EBCU_BEH2ibp8KpgbLItFGOelTwhTKTM50zip1lSNIO7Z-yk9TzPwNag/exec", {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        numero: ticket.num,
+        nombre: ticket.name,
+        apellido: ticket.apellido,
+        celular: ticket.celular
+      })
+    });
+
+  } catch(err) {
+    console.error(err);
+  }
+
+  document.getElementById('nameInput').value = '';
+  document.getElementById('apellidoInput').value = '';
+  document.getElementById('celularInput').value = '';
+
+  renderAll();
+
+  showToast('✅ Ticket registrado');
+}
 
   function deleteTicket(num) {
     if (!confirm('¿Eliminar el ticket #' + pad(num) + '?')) return;
